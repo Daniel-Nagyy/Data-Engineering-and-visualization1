@@ -19,6 +19,7 @@ def parse_search_query(text):
     for b in boroughs:
         if b in text:
             filters["borough"] = b.title()
+            break
 
     # Year detection (4-digit years starting with 20)
     match = re.search(r"(20\d{2})", text)

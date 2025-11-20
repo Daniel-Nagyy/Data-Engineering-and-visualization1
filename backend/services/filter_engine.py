@@ -73,8 +73,6 @@ def apply_filters(df, filters):
                 col_str = df_filtered[col].astype(str).str.lower().fillna('')
                 search_mask = search_mask | col_str.str.contains(search_lower, na=False, regex=False)
         
-        # Only apply search filter if we found any matches
-        if search_mask.any():
-            df_filtered = df_filtered[search_mask]
+        df_filtered = df_filtered[search_mask]
 
     return df_filtered
