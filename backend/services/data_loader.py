@@ -1,16 +1,19 @@
 import pandas as pd
 import os
 
-def load_data():
+def load_data(nrows=400000):
     """
     Loads the merged dataset into memory once.
+
+    Args:
+        nrows: Maximum number of rows to load from CSV. Set to None to load all rows.
     """
     # Get the directory where this file is located (services/)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # Go up one level to backend/, then into data/
     data_path = os.path.join(current_dir, "..", "data", "df_merged_final.csv")
-    
-    df = pd.read_csv(data_path, low_memory=False)
+
+    df = pd.read_csv(data_path, low_memory=False, nrows=nrows)
 
     # Basic preprocessing - convert crash_datetime to datetime
     if 'crash_datetime' in df.columns:
