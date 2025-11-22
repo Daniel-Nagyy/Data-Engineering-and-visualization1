@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import pandas as pd
 from utils.cache import cache
@@ -52,7 +52,8 @@ initialize_data()
 
 @app.get("/")
 def home():
-    return jsonify({"message": "NYC Crash Analysis Backend Running"})
+    """Serve the dashboard frontend."""
+    return render_template('dashboard.html')
 
 
 @app.get("/api/filters")
