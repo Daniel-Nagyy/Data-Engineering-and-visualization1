@@ -224,18 +224,19 @@ function renderDashboard() {
 function updateStats() {
     const data = state.data;
 
-    // Total crashes
+    // Total crashes (rows)
     document.getElementById('stat-crashes').textContent = data.length.toLocaleString();
 
     // Unique collisions
     const uniqueCollisions = new Set(data.map(d => d.collision_id)).size;
     document.getElementById('stat-collisions').textContent = uniqueCollisions.toLocaleString();
 
-    // Injured and killed
+    // Count injured and killed from person_injury field
     let injured = 0, killed = 0;
     data.forEach(d => {
-        injured += parseInt(d.number_of_persons_injured || 0);
-        killed += parseInt(d.number_of_persons_killed || 0);
+        const injury = (d.person_injury || '').toLowerCase();
+        if (injury === 'injured') injured++;
+        if (injury === 'killed') killed++;
     });
 
     document.getElementById('stat-injured').textContent = injured.toLocaleString();
@@ -296,8 +297,22 @@ function renderVehicleChart() {
 
 // Timeline line chart
 function renderTimelineChart() {
-    const monthly = {};
+    // First, aggregate by collision_id to avoid double counting
+    const collisionData = {};
     state.data.forEach(d => {
+        const id = d.collision_id;
+        if (!collisionData[id]) {
+            collisionData[id] = {
+                crash_datetime: d.crash_datetime,
+                injured: parseFloat(d.number_of_persons_injured) || 0,
+                killed: parseFloat(d.number_of_persons_killed) || 0
+            };
+        }
+    });
+
+    // Then aggregate by month
+    const monthly = {};
+    Object.values(collisionData).forEach(d => {
         if (!d.crash_datetime) return;
         const date = new Date(d.crash_datetime);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -306,8 +321,8 @@ function renderTimelineChart() {
             monthly[key] = { crashes: 0, injured: 0, killed: 0 };
         }
         monthly[key].crashes++;
-        monthly[key].injured += parseInt(d.number_of_persons_injured || 0);
-        monthly[key].killed += parseInt(d.number_of_persons_killed || 0);
+        monthly[key].injured += d.injured;
+        monthly[key].killed += d.killed;
     });
 
     const sorted = Object.entries(monthly).sort((a, b) => a[0].localeCompare(b[0]));

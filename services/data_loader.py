@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-def load_data(nrows=400000):
+def load_data(nrows=200000):
     """
     Loads the merged dataset into memory once.
 
