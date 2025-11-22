@@ -18,11 +18,11 @@ function App() {
     injury_types: []
   })
   const [filters, setFilters] = useState({
-    borough: '',
-    year: '',
-    vehicle_type: '',
-    contributing_factor: '',
-    injury_type: '',
+    borough: [],
+    year: [],
+    vehicle_type: [],
+    contributing_factor: [],
+    injury_type: [],
     search: ''
   })
   const [loading, setLoading] = useState(false)
@@ -68,7 +68,16 @@ function App() {
   }
 
   const handleSearch = (searchText) => {
-    setFilters(prev => ({ ...prev, search: searchText }))
+    if (searchText.trim()) {
+      // When using search, set the search text and let the backend handle parsing
+      setFilters(prev => ({ 
+        ...prev, 
+        search: searchText 
+      }))
+    } else {
+      // Clear search when empty
+      setFilters(prev => ({ ...prev, search: '' }))
+    }
   }
 
   const handleGenerateReport = () => {
@@ -78,16 +87,24 @@ function App() {
 
   const handleClearFilters = () => {
     setFilters({
-      borough: '',
-      year: '',
-      vehicle_type: '',
-      contributing_factor: '',
-      injury_type: '',
+      borough: [],
+      year: [],
+      vehicle_type: [],
+      contributing_factor: [],
+      injury_type: [],
       search: ''
     })
     setData([])
     setDataLoaded(false)
   }
+
+  const isGenerateDisabled = 
+    filters.borough.length === 0 && 
+    filters.year.length === 0 && 
+    filters.vehicle_type.length === 0 && 
+    filters.contributing_factor.length === 0 && 
+    filters.injury_type.length === 0 && 
+    !filters.search
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -138,6 +155,46 @@ function App() {
               <div className="text-sm text-white/60 italic">
                 Try: "Brooklyn 2022 sedan crashes" or "Queens injuries"
               </div>
+              {/* Selected Filters Display */}
+              {(filters.borough.length > 0 || filters.year.length > 0 || filters.vehicle_type.length > 0 || filters.contributing_factor.length > 0 || filters.injury_type.length > 0 || filters.search) && (
+                <div className="mt-4 p-3 bg-white/10 rounded-lg border border-white/20">
+                  <h3 className="text-sm font-medium text-white/90 mb-2">Active Filters:</h3>
+                  <div className="space-y-1">
+                    {filters.search && (
+                      <div className="text-xs text-white/70">
+                        Search: "{filters.search}"
+                      </div>
+                    )}
+                    {filters.borough.length > 0 && (
+                      <div className="text-xs text-white/70">
+                        Borough: {filters.borough.join(', ')}
+                      </div>
+                    )}
+                    {filters.year.length > 0 && (
+                      <div className="text-xs text-white/70">
+                        Year: {filters.year.join(', ')}
+                      </div>
+                    )}
+                    {filters.vehicle_type.length > 0 && (
+                      <div className="text-xs text-white/70">
+                        Vehicle Type: {filters.vehicle_type.slice(0, 3).join(', ')}
+                        {filters.vehicle_type.length > 3 && ` and ${filters.vehicle_type.length - 3} more...`}
+                      </div>
+                    )}
+                    {filters.contributing_factor.length > 0 && (
+                      <div className="text-xs text-white/70">
+                        Contributing Factor: {filters.contributing_factor.slice(0, 2).join(', ')}
+                        {filters.contributing_factor.length > 2 && ` and ${filters.contributing_factor.length - 2} more...`}
+                      </div>
+                    )}
+                    {filters.injury_type.length > 0 && (
+                      <div className="text-xs text-white/70">
+                        Injury Type: {filters.injury_type.join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -146,8 +203,7 @@ function App() {
             <GenerateButton
               onClick={handleGenerateReport}
               loading={loading}
-              disabled={!filters.borough && !filters.year && !filters.vehicle_type && 
-                       !filters.contributing_factor && !filters.injury_type && !filters.search}
+              disabled={isGenerateDisabled}
             />
           </div>
         </div>
@@ -155,7 +211,7 @@ function App() {
         {/* Dashboard */}
         {data.length > 0 && !loading && (
           <div className="animate-slide-up">
-            <Dashboard data={data} />
+            <Dashboard data={data} filters={filters} />
           </div>
         )}
 
@@ -182,6 +238,11 @@ function App() {
             <div className="text-6xl mb-4">📊</div>
             <h3 className="text-2xl font-semibold mb-2">Ready to Explore</h3>
             <p className="text-white/70 mb-6">Select filters or search, then click Generate Report to visualize NYC crash data</p>
+            <div className="text-sm text-white/60">
+              <p>• Select multiple options in each filter category</p>
+              <p>• Use natural language search like "Brooklyn 2022 motorcycle crashes"</p>
+              <p>• Combine filters for detailed analysis</p>
+            </div>
           </div>
         )}
       </main>

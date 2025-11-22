@@ -80,11 +80,15 @@ def get_data():
         # Dropdown filters take precedence if both are set
         for key in ["borough", "year", "vehicle_type", "contributing_factor", "injury_type"]:
             if filters.get(key):
-                # Dropdown filter takes precedence
+                # Dropdown filter takes precedence (already an array)
                 continue
             elif parsed_filters.get(key):
-                # Use parsed filter from search query
-                filters[key] = parsed_filters[key]
+                # Convert parsed filter value to array format (filter_engine expects arrays)
+                parsed_value = parsed_filters[key]
+                if isinstance(parsed_value, list):
+                    filters[key] = parsed_value
+                else:
+                    filters[key] = [parsed_value]
         
         # Always keep the search text for text search in filter_engine
         filters["search"] = search_query

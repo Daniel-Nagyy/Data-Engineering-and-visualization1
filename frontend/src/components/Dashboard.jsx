@@ -5,10 +5,16 @@ import LineChart from './charts/LineChart'
 import Heatmap from './charts/Heatmap'
 import MapChart from './charts/MapChart'
 
-function Dashboard({ data }) {
+function Dashboard({ data, filters }) {  // Add filters prop
   if (!data || data.length === 0) {
     return null
   }
+
+  // Debug: Check what vehicle types are actually in the filtered data
+  const vehicleTypesInData = [...new Set(data.map(d => d.vehicle_type_code_1).concat(data.map(d => d.vehicle_type_code_2)))].filter(Boolean)
+  console.log('Filtered data vehicle types:', vehicleTypesInData)
+  console.log('Total records:', data.length)
+  console.log('Current filters:', filters)
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -22,25 +28,50 @@ function Dashboard({ data }) {
         />
         <StatCard
           title="Injured"
-          value={data.reduce((sum, d) => {
-            const val = d.number_of_persons_injured;
-            // Handle string, number, or null/undefined
-            if (val === null || val === undefined || val === '') return sum;
-            const num = typeof val === 'string' ? parseFloat(val) : Number(val);
-            return sum + (isNaN(num) ? 0 : num);
-          }, 0).toLocaleString()}
+          value={(() => {
+            // Prefer crash-level aggregated counts when present (>0), otherwise count person-level `person_injury` records
+            const crashSum = data.reduce((sum, d) => {
+              const val = d.number_of_persons_injured
+              if (val === null || val === undefined || val === '') return sum
+              const num = typeof val === 'string' ? parseFloat(val) : Number(val)
+              return sum + (isNaN(num) ? 0 : num)
+            }, 0)
+
+            if (crashSum > 0) return crashSum.toLocaleString()
+
+            // Fallback: count rows where `person_injury` indicates an injury
+            const personCount = data.reduce((sum, d) => {
+              const pi = d.person_injury
+              if (!pi) return sum
+              const s = pi.toString().toLowerCase()
+              return sum + (s.includes('injur') ? 1 : 0)
+            }, 0)
+            return personCount.toLocaleString()
+          })()}
           icon="🏥"
           color="from-yellow-500 to-orange-500"
         />
         <StatCard
           title="Fatalities"
-          value={data.reduce((sum, d) => {
-            const val = d.number_of_persons_killed;
-            // Handle string, number, or null/undefined
-            if (val === null || val === undefined || val === '') return sum;
-            const num = typeof val === 'string' ? parseFloat(val) : Number(val);
-            return sum + (isNaN(num) ? 0 : num);
-          }, 0).toLocaleString()}
+          value={(() => {
+            const crashSum = data.reduce((sum, d) => {
+              const val = d.number_of_persons_killed
+              if (val === null || val === undefined || val === '') return sum
+              const num = typeof val === 'string' ? parseFloat(val) : Number(val)
+              return sum + (isNaN(num) ? 0 : num)
+            }, 0)
+
+            if (crashSum > 0) return crashSum.toLocaleString()
+
+            // Fallback: count person-level `person_injury` records that indicate death/killed
+            const personCount = data.reduce((sum, d) => {
+              const pi = d.person_injury
+              if (!pi) return sum
+              const s = pi.toString().toLowerCase()
+              return sum + ((s.includes('kill') || s.includes('death')) ? 1 : 0)
+            }, 0)
+            return personCount.toLocaleString()
+          })()}
           icon="⚰️"
           color="from-red-500 to-pink-500"
         />
@@ -51,6 +82,7 @@ function Dashboard({ data }) {
           color="from-purple-500 to-indigo-500"
         />
       </div>
+
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -63,7 +95,7 @@ function Dashboard({ data }) {
         {/* Vehicle Type Distribution */}
         <div className="glass p-6 animate-slide-up">
           <h2 className="text-xl font-semibold mb-4 text-white">Vehicle Type Distribution</h2>
-          <PieChart data={data} />
+          <PieChart data={data} filters={filters} />  {/* Pass filters prop */}
         </div>
 
         {/* Time Series */}
