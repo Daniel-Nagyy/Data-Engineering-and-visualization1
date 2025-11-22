@@ -89,32 +89,53 @@ def apply_filters(df, filters):
     ])
     
     search = filters.get("search", "").strip()
+    # if search:
+    #     # If structured filters were found, skip text search entirely
+    #     # The structured filters already handle the parsed parts correctly
+    #     # This ensures search results match dropdown filter results
+    #     if not has_structured_filters:
+    #         # Pure text search - no structured filters found
+    #         search_lower = search.lower()
+    #         search_cols = [
+    #             "borough", "vehicle_type_code_1", "vehicle_type_code_2",
+    #             "contributing_factor_vehicle_1", "contributing_factor_vehicle_2",
+    #             "on_street_name", "cross_street_name", "off_street_name"
+    #         ]
+            
+    #         # Split search query into words and match if ANY word matches
+    #         search_words = search_lower.split()
+    #         search_mask = pd.Series([False] * len(df_filtered), index=df_filtered.index)
+            
+    #         for col in search_cols:
+    #             if col in df_filtered.columns:
+    #                 col_str = df_filtered[col].astype(str).str.lower().fillna('')
+    #                 # Match if any word in the search query is found in this column
+    #                 for word in search_words:
+    #                     if word.strip():  # Skip empty words
+    #                         search_mask = search_mask | col_str.str.contains(word.strip(), na=False, regex=False)
+            
+    #         if search_mask.any():
+    #             df_filtered = df_filtered[search_mask]
+
     if search:
-        # If structured filters were found, skip text search entirely
-        # The structured filters already handle the parsed parts correctly
-        # This ensures search results match dropdown filter results
-        if not has_structured_filters:
-            # Pure text search - no structured filters found
-            search_lower = search.lower()
-            search_cols = [
-                "borough", "vehicle_type_code_1", "vehicle_type_code_2",
-                "contributing_factor_vehicle_1", "contributing_factor_vehicle_2",
-                "on_street_name", "cross_street_name", "off_street_name"
-            ]
-            
-            # Split search query into words and match if ANY word matches
-            search_words = search_lower.split()
-            search_mask = pd.Series([False] * len(df_filtered), index=df_filtered.index)
-            
-            for col in search_cols:
-                if col in df_filtered.columns:
-                    col_str = df_filtered[col].astype(str).str.lower().fillna('')
-                    # Match if any word in the search query is found in this column
-                    for word in search_words:
-                        if word.strip():  # Skip empty words
-                            search_mask = search_mask | col_str.str.contains(word.strip(), na=False, regex=False)
-            
-            if search_mask.any():
-                df_filtered = df_filtered[search_mask]
+        search_lower = search.lower()
+        search_cols = [
+            "borough", "vehicle_type_code_1", "vehicle_type_code_2",
+            "contributing_factor_vehicle_1", "contributing_factor_vehicle_2",
+            "on_street_name", "cross_street_name", "off_street_name"
+        ]
+
+        search_words = search_lower.split()
+        search_mask = pd.Series([False] * len(df_filtered), index=df_filtered.index)
+
+        for col in search_cols:
+            if col in df_filtered.columns:
+                col_str = df_filtered[col].astype(str).str.lower().fillna('')
+                for word in search_words:
+                    if word.strip():
+                        search_mask |= col_str.str.contains(word.strip(), na=False, regex=False)
+
+        df_filtered = df_filtered[search_mask]
+
 
     return df_filtered
