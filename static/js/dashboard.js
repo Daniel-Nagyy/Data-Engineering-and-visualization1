@@ -116,9 +116,9 @@ function updateActiveFilters() {
 
     container.classList.remove('hidden');
     container.innerHTML = allFilters.map(({ key, value }) => `
-        <span class="bg-purple-600/50 px-3 py-1 rounded-full text-sm flex items-center gap-2">
+        <span class="bg-teal-600/50 px-3 py-1 rounded-full text-sm flex items-center gap-2">
             ${value}
-            <button onclick="removeFilter('${key}', '${value}')" class="hover:text-red-400">&times;</button>
+            <button onclick="removeFilter('${key}', '${value}')" class="hover:text-rose-400">&times;</button>
         </span>
     `).join('');
 }
@@ -257,7 +257,7 @@ function renderBoroughChart() {
         x: sorted.map(s => s[0]),
         y: sorted.map(s => s[1]),
         type: 'bar',
-        marker: { color: '#8b5cf6' }
+        marker: { color: '#0d9488' }
     }], {
         ...layoutDefaults,
         xaxis: { tickangle: -45 }
@@ -286,7 +286,7 @@ function renderVehicleChart() {
         type: 'pie',
         hole: 0.4,
         marker: {
-            colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#10b981', '#6366f1', '#f43f5e', '#14b8a6', '#94a3b8']
+            colors: ['#0d9488', '#06b6d4', '#0ea5e9', '#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#f97316', '#94a3b8']
         }
     }], {
         ...layoutDefaults,
@@ -335,7 +335,7 @@ function renderTimelineChart() {
             name: 'Crashes',
             type: 'scatter',
             mode: 'lines',
-            line: { color: '#3b82f6' }
+            line: { color: '#06b6d4' }
         },
         {
             x: dates,
@@ -343,7 +343,7 @@ function renderTimelineChart() {
             name: 'Injured',
             type: 'scatter',
             mode: 'lines',
-            line: { color: '#f97316' }
+            line: { color: '#f59e0b' }
         },
         {
             x: dates,
@@ -351,7 +351,7 @@ function renderTimelineChart() {
             name: 'Killed',
             type: 'scatter',
             mode: 'lines',
-            line: { color: '#ef4444' }
+            line: { color: '#fb7185' }
         }
     ], {
         ...layoutDefaults,
@@ -377,7 +377,7 @@ function renderFactorsChart() {
         x: sorted.map(s => s[1]),
         type: 'bar',
         orientation: 'h',
-        marker: { color: '#ec4899' }
+        marker: { color: '#14b8a6' }
     }], {
         ...layoutDefaults,
         margin: { l: 200, r: 30, t: 30, b: 50 }
@@ -404,7 +404,7 @@ function renderHeatmap() {
         x: months,
         y: boroughs,
         type: 'heatmap',
-        colorscale: [[0, '#1e3a8a'], [1, '#dc2626']]
+        colorscale: [[0, '#134e4a'], [0.5, '#0d9488'], [1, '#5eead4']]
     }], {
         ...layoutDefaults,
         margin: { l: 100, r: 30, t: 30, b: 50 }
@@ -426,7 +426,7 @@ function renderMap() {
         mode: 'markers',
         marker: {
             size: 5,
-            color: '#8b5cf6',
+            color: '#06b6d4',
             opacity: 0.6
         },
         text: mapData.map(d => `${d.borough || 'Unknown'}<br>Injured: ${d.number_of_persons_injured || 0}`)
